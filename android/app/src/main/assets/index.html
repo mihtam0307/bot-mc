@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bầy Bot</title>
+<style>
+:root{--bg:#12161a;--pan:#1b2127;--pan2:#252e35;--line:#2f3a42;--edge:#0a0d10;--ink:#e9f0ea;--dim:#8d9ca4;--moss:#7bd76a;--moss2:#3f8f35;--red:#e8473a;--red2:#9c2a22;--torch:#f2b53d;--lapis:#5a86ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,Roboto,"Segoe UI",sans-serif}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+#app{display:flex;flex-direction:column;height:100%}
+header{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:2px solid var(--edge);background:var(--pan)}
+header .brand{flex:1;min-width:0}
+header h1{margin:0;font-size:17px;letter-spacing:.2px}
+header .sub{font-size:12px;color:var(--dim);display:flex;gap:10px;align-items:center}
+.sq{width:9px;height:9px;display:inline-block;background:var(--red);box-shadow:0 0 0 2px var(--edge)}
+.sq.on{background:var(--moss)}
+main{flex:1;overflow-y:auto;padding:12px;-webkit-overflow-scrolling:touch}
+.pane{display:none}.pane.on{display:block}
+.head{display:flex;align-items:center;justify-content:space-between;margin:2px 0 10px}
+.head h2{margin:0;font-size:19px}
+.card{background:var(--pan);border:2px solid var(--edge);border-radius:4px;padding:11px;margin-bottom:12px;box-shadow:inset 0 2px 0 rgba(255,255,255,.05),0 3px 0 #090c0f}
+.row{display:flex;align-items:center;gap:8px}.row.gap{flex-wrap:wrap;margin:10px 0 4px}
+.grow{flex:1;min-width:0}
+.t{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dim{color:var(--dim);font-size:13px}
+.empty{color:var(--dim);text-align:center;padding:26px 10px;border:2px dashed var(--line);border-radius:4px}
+.btn{border:2px solid var(--edge);background:var(--pan2);padding:8px 13px;border-radius:3px;font-weight:650;cursor:pointer;box-shadow:inset 0 2px 0 rgba(255,255,255,.13),inset 0 -3px 0 rgba(0,0,0,.35)}
+.btn:active{transform:translateY(2px)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.moss{background:var(--moss2)}.btn.red{background:var(--red2)}.btn.lapis{background:#2f4fb0}
+.btn:disabled{opacity:.45}
+input,select{width:100%;background:#0e1215;border:2px solid;border-color:#06080a #2b353d #2b353d #06080a;border-radius:3px;padding:9px 10px;outline:none}
+input:focus,select:focus{border-color:var(--lapis)}
+label{display:block;font-size:12.5px;color:var(--dim);margin:8px 0 3px}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bot{display:flex;align-items:center;gap:9px;padding:8px 0;border-top:1px solid var(--line)}
+.dot{width:12px;height:12px;flex:none;background:var(--red);box-shadow:0 0 0 2px var(--edge),inset 0 -3px 0 rgba(0,0,0,.3)}
+.dot.on{background:var(--moss)}.dot.wait{background:var(--torch);animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{opacity:.35}}
+.mini{font-size:12px;color:var(--dim);white-space:nowrap}
+.x{background:none;border:0;padding:4px;color:var(--dim)}.x svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:square}
+.x.arm{color:var(--red)}
+.chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px}
+.chip{flex:none;display:flex;align-items:center;gap:7px;border:2px solid var(--edge);background:var(--pan2);padding:6px 11px;border-radius:3px;font-weight:600}
+.chip.sel{background:#2f4a8f;border-color:#6b8cf0}
+.bar{height:16px;background:#0b0f12;border:2px solid var(--edge);position:relative;margin:4px 0 8px}
+.bar i{position:absolute;inset:0 auto 0 0;display:block}
+.bar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),#0b0f12 calc(10% - 2px) 10%)}
+.bar span{position:absolute;right:6px;top:-1px;font-size:11px;font-weight:700;z-index:2;text-shadow:1px 1px 0 #000}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:14px}.kv b{color:var(--dim);font-weight:500}
+.inv{display:grid;grid-template-columns:repeat(9,1fr);gap:3px}
+.inv .gap{grid-column:span 4}
+.slot{display:block;position:relative;aspect-ratio:1;background:#0e1317;border:2px solid;border-color:#05070a #2d3841 #2d3841 #05070a}
+.slot b{position:absolute;inset:3px;display:grid;place-items:center;font-size:10px;font-weight:700;color:#fff;border-radius:2px;text-shadow:0 1px 0 #000}
+.slot u{position:absolute;right:2px;bottom:-1px;font-size:11px;font-weight:800;text-decoration:none;text-shadow:1px 1px 0 #000}
+.slot.sel{outline:3px solid #fff;outline-offset:-1px;z-index:1}
+.sep{height:8px;grid-column:1/-1}
+canvas{display:block;width:100%;max-width:340px;margin:0 auto;image-rendering:pixelated;border:2px solid var(--edge);background:#10141a}
+.legend{display:flex;gap:12px;justify-content:center;font-size:12px;color:var(--dim);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:-1px}
+.cmd{display:flex;gap:8px}.cmd .btn{flex:none}
+.hint{font-size:12px;color:var(--dim);margin:6px 0 10px}
+.pre{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.ln{font-size:12.5px;padding:3px 0;border-bottom:1px solid #20282e;word-break:break-word}
+.ln time{color:var(--dim);margin-right:6px}.ln b{margin-right:6px;color:var(--lapis)}
+.ln.error{color:#ff8c82}.ln.warn{color:var(--torch)}
+.ai-e{border-left:4px solid var(--lapis);padding:2px 0 2px 9px;margin-bottom:10px;font-size:13px}
+.ai-e.rules{border-color:var(--torch)}.ai-e.err{color:#ff8c82}
+.big{width:100%;padding:16px;font-size:17px;display:flex;align-items:center;justify-content:center;gap:10px}
+.big svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+#estop{border:2px solid var(--edge);background:var(--red);padding:7px 10px;border-radius:3px;display:flex;align-items:center;gap:6px;font-weight:800;box-shadow:inset 0 2px 0 rgba(255,255,255,.25),inset 0 -3px 0 rgba(0,0,0,.35)}
+#estop svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+#estop:active{transform:translateY(2px)}
+nav{display:flex;overflow-x:auto;background:var(--pan);border-top:2px solid var(--edge);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1 0 auto;min-width:76px;background:none;border:0;padding:8px 6px 7px;color:var(--dim);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:600;border-top:3px solid transparent}
+nav button.on{color:var(--moss);border-top-color:var(--moss);background:#202830}
+nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linejoin:round;stroke-linecap:round}
+#toast{position:fixed;left:12px;right:12px;bottom:76px;background:#000d;border:2px solid var(--line);padding:10px 12px;border-radius:4px;text-align:center;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:9}
+#toast.on{opacity:1;transform:none}
+#gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+#gate .card{width:100%;max-width:380px}
+#gate h1{margin:0 0 4px;font-size:22px}
+.err{color:#ff8c82;font-size:13px;min-height:18px;margin-top:8px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+
+<div id="gate"><div class="card form">
+  <h1>Bầy Bot</h1>
+  <div class="dim">Kết nối tới bot đang chạy trong Termux.</div>
+  <label>Địa chỉ</label><input id="g-host" value="127.0.0.1:8080" autocapitalize="off" autocomplete="off">
+  <label>Token (in ra khi chạy <code>npm start</code>)</label><input id="g-token" autocapitalize="off" autocomplete="off">
+  <button class="btn moss big" id="g-go" style="margin-top:14px">Kết nối</button>
+  <div class="err" id="g-err"></div>
+</div></div>
+
+<div id="app" hidden>
+<header>
+  <div class="brand"><h1 id="title">BOT</h1>
+    <div class="sub"><span><i class="sq" id="conn"></i> <span id="connt">Mất kết nối</span></span><span id="mem"></span><span id="cnt"></span></div></div>
+  <button id="estop" data-act="estop" aria-label="Dừng khẩn cấp"><svg viewBox="0 0 24 24"><path d="M8 2h8l6 6v8l-6 6H8l-6-6V8z"/><path d="M8 12h8"/></svg>DỪNG</button>
+</header>
+<main>
+<section class="pane" id="p-bots">
+  <div class="head"><h2>Server và bot</h2><button class="btn sm lapis" data-act="showsrv">Thêm server</button></div>
+  <div class="card form" id="f-srv" hidden>
+    <label>Tên gọi</label><input id="s-name" placeholder="Server của tôi">
+    <div class="two"><div><label>Địa chỉ</label><input id="s-host" placeholder="play.example.com" autocapitalize="off"></div><div><label>Cổng</label><input id="s-port" value="25565" inputmode="numeric"></div></div>
+    <label>Phiên bản (bỏ trống = tự nhận)</label><input id="s-ver" placeholder="1.20.4">
+    <div class="row gap"><button class="btn moss" data-act="savesrv">Lưu server</button><button class="btn" data-act="showsrv">Đóng</button></div>
+  </div>
+  <div class="card form" id="f-bot" hidden>
+    <div class="t" id="fb-title">Thêm bot</div>
+    <label>Tên bot (nhiều bot: gõ tên gốc, đặt số lượng)</label><input id="b-name" placeholder="Tho" autocapitalize="off">
+    <div class="two"><div><label>Số lượng</label><input id="b-count" value="1" inputmode="numeric"></div><div><label>Mật khẩu server (trống = tự tạo)</label><input id="b-pw"></div></div>
+    <div class="row gap"><button class="btn moss" data-act="savebot">Thêm</button><button class="btn" data-act="hidebot">Đóng</button></div>
+  </div>
+  <div id="srvlist"></div>
+</section>
+
+<section class="pane" id="p-view">
+  <div class="head"><h2>Hành vi BOT</h2></div>
+  <div class="chips" id="vsel"></div>
+  <div id="vstats"></div>
+  <div class="card" id="vinvc" hidden><div class="t" style="margin-bottom:8px">Túi đồ</div><div class="inv" id="vinv"></div></div>
+  <div class="card" id="vmapc" hidden><div class="t" style="margin-bottom:8px">Bản đồ quanh bot</div><canvas id="vmap" width="294" height="294"></canvas>
+    <div class="legend"><span><i style="background:#52e05a"></i>người chơi</span><span><i style="background:#ff4040"></i>quái</span><span><i style="background:#ffd23c"></i>đồ rơi</span><span><i style="background:#5ad7ff"></i>bot</span></div></div>
+</section>
+
+<section class="pane" id="p-ctl">
+  <div class="head"><h2>Điều khiển</h2></div>
+  <div class="chips" id="csel"></div>
+  <div class="cmd"><input id="c1-in" placeholder="Ra lệnh cho bot…" autocomplete="off" autocapitalize="off"><button class="btn moss" data-act="send1">Gửi</button></div>
+  <div class="hint">Gõ bình thường: AI xử lý. Bắt đầu bằng <b>-</b>: gửi thẳng cho bot, ví dụ <b>-goto 10 64 -20</b>, <b>-mine iron_ore 5</b>, <b>-say xin chào</b>.</div>
+  <div class="pre" id="cpre"></div>
+  <div class="card form"><div class="t">Tất cả vật phẩm trong game</div>
+    <div class="dim" id="it-n">Chưa tải danh sách (cần 1 bot đang chạy).</div>
+    <input id="it-q" placeholder="Tìm vật phẩm, ví dụ: diamond, sword" autocapitalize="off" autocomplete="off" style="margin-top:8px">
+    <div class="chips" id="it-res" style="flex-wrap:wrap;overflow:visible;margin-top:8px"></div>
+    <div id="it-pick" hidden><div class="t" id="it-name"></div>
+      <div class="row gap"><input id="it-qty" value="1" inputmode="numeric" style="width:76px"><button class="btn sm moss" data-act="itgive">Cho bot</button><button class="btn sm" data-act="itcraft">Chế tạo</button><button class="btn sm" data-act="itequip">Cầm</button><button class="btn sm" data-act="itdrop">Thả</button></div>
+      <div class="dim">"Cho bot" cần bot có quyền OP hoặc đang ở chế độ creative.</div></div></div>
+  <div class="card"><div class="t" style="margin-bottom:6px">Nhật ký bot này</div><div id="ctail"></div></div>
+</section>
+
+<section class="pane" id="p-multi">
+  <div class="head"><h2>Đa điều khiển</h2><div class="row"><button class="btn sm" data-act="mall">Chọn hết</button><button class="btn sm" data-act="mnone">Bỏ chọn</button></div></div>
+  <div class="chips" id="msel" style="flex-wrap:wrap;overflow:visible"></div>
+  <div class="cmd"><input id="c2-in" placeholder="Ra lệnh cho các bot đã chọn…" autocomplete="off" autocapitalize="off"><button class="btn moss" data-act="send2">Gửi</button></div>
+  <div class="hint" id="mhint"></div>
+  <div class="pre" id="mpre"></div>
+</section>
+
+<section class="pane" id="p-log">
+  <div class="head"><h2>Log</h2></div>
+  <div class="chips" id="lsel"></div>
+  <div id="loglist"></div>
+</section>
+
+<section class="pane" id="p-ai">
+  <div class="head"><h2>AI</h2><button class="btn sm" data-act="aiping">Kiểm tra</button></div>
+  <div class="card"><div class="row"><i class="sq" id="ai-dot"></i><div class="grow"><div class="t" id="ai-st">Đang kiểm tra…</div><div class="dim">AI chạy cục bộ bằng llama.cpp. Khi AI tắt, app dùng bộ phân tích dự phòng.</div></div></div>
+    <label>Địa chỉ llama-server</label><input id="ai-url" autocapitalize="off">
+    <label>Tên model</label><input id="ai-model" autocapitalize="off">
+    <div class="row gap"><button class="btn moss" data-act="saveai">Lưu AI</button></div></div>
+  <div class="t" style="margin:6px 0 8px">Các lệnh AI đã xử lý</div>
+  <div id="ailist"></div>
+</section>
+
+<section class="pane" id="p-safe">
+  <div class="head"><h2>An toàn</h2></div>
+  <button class="btn red big" data-act="estop"><svg viewBox="0 0 24 24"><path d="M8 2h8l6 6v8l-6 6H8l-6-6V8z"/><path d="M8 12h8"/></svg>Dừng khẩn cấp (vân tay)</button>
+  <div class="hint">Dừng ngay toàn bộ bot, cần xác nhận bằng vân tay của bạn.</div>
+  <div class="card form"><div class="t">Chủ nhân điều khiển trong game</div>
+    <div class="dim">Chỉ những tên này được ra lệnh bằng <b>/msg tên_bot lệnh</b>. Danh sách trống thì không ai được.</div>
+    <div class="cmd" style="margin-top:8px"><input id="own-in" placeholder="Tên người chơi" autocapitalize="off"><button class="btn" data-act="addown">Thêm</button></div>
+    <div class="chips" id="owners" style="margin-top:10px;flex-wrap:wrap"></div></div>
+  <div class="card form"><div class="t">Giới hạn tài nguyên</div>
+    <div class="two"><div><label>Giãn cách bật bot (giây)</label><input id="z-stagger" inputmode="numeric"></div><div><label>Tối đa bot cùng lúc</label><input id="z-max" inputmode="numeric"></div></div>
+    <div class="two"><div><label>Giới hạn RAM (MB)</label><input id="z-ram" inputmode="numeric"></div><div><label>Tầm nhìn chunk</label><select id="z-view"><option value="tiny">tiny (ít RAM nhất)</option><option value="short">short</option><option value="normal">normal</option><option value="far">far</option></select></div></div>
+    <div class="two"><div><label>Tự ăn khi đói ≤</label><input id="z-eat" inputmode="numeric"></div><div><label>Rút lui khi máu ≤</label><input id="z-hp" inputmode="numeric"></div></div>
+    <div class="row gap"><button class="btn moss" data-act="savesafe">Lưu cài đặt</button></div>
+    <div class="dim">Tầm nhìn chunk áp dụng ở lần bot kết nối tiếp theo.</div></div>
+</section>
+</main>
+<nav id="nav"></nav>
+<div id="toast"></div>
+</div>
+
+<script>
+(()=>{'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ST=(b)=>b.status==='running'?'on':b.status==='connecting'?'wait':'';
+// biểu tượng tự vẽ (không dùng bộ icon có sẵn)
+const ICON={
+ bots:'<svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>',
+ view:'<svg viewBox="0 0 24 24"><path d="M2 12h4l2.5-7 4 14 3-9 1.5 2H22"/></svg>',
+ ctl:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg>',
+ multi:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="8" y="13" width="8" height="8"/></svg>',
+ log:'<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h12M4 18h8"/></svg>',
+ ai:'<svg viewBox="0 0 24 24"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z"/></svg>',
+ safe:'<svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>'};
+const TABS=[['bots','BOT','Server và bot'],['view','Hành vi','Hành vi BOT'],['ctl','Điều khiển','Điều khiển'],['multi','Đa điều khiển','Đa điều khiển'],['log','Log','Log'],['ai','AI','AI'],['safe','An toàn','An toàn']];
+const MODE={idle:'Rảnh',guard:'Bảo vệ',follow:'Đang theo',collect:'Thu thập',mine:'Đào',attack:'Chiến đấu',craft:'Chế tạo',enchant:'Phù phép',goto:'Di chuyển',come:'Đi tới',equip:'Trang bị',drop:'Thả đồ',place:'Đặt khối',break:'Phá khối',eat:'Ăn',plan:'Làm việc'};
+let S={servers:[],bots:[],settings:{},mem:0,ai:{ok:false}},logs=[],ailog=[],det=null,ws=null,tab='bots',selBot=null,selCtl=null,multi=new Set(),logF='all',opened=false,addSrv=null,armed={},retry=null,CAT=null,itSel=null;
+const bot=id=>S.bots.find(b=>b.id===id), runBots=()=>S.bots.filter(b=>b.status==='running');
+const send=o=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify(o));};
+let tt;const toast=m=>{const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),2600);};
+
+// ---------- kết nối ----------
+function connect(){
+  const host=localStorage.mc_host||'127.0.0.1:8080',tk=localStorage.mc_token||'';
+  if(!tk){showGate('');return;}
+  try{ws=new WebSocket('ws://'+host+'/?token='+encodeURIComponent(tk));}catch(e){showGate('Địa chỉ không hợp lệ');return;}
+  ws.onopen=()=>{opened=true;$('#gate').hidden=true;$('#app').hidden=false;setConn(true);if(tab==='view'&&selBot)send({t:'select',id:selBot});};
+  ws.onmessage=e=>{try{handle(JSON.parse(e.data));}catch(x){}};
+  ws.onclose=()=>{setConn(false);if(!opened)showGate('Không kết nối được. Kiểm tra Termux đang chạy "npm start" và token đúng.');clearTimeout(retry);retry=setTimeout(connect,3000);};
+}
+function showGate(msg){$('#gate').hidden=false;$('#app').hidden=true;$('#g-host').value=localStorage.mc_host||'127.0.0.1:8080';$('#g-token').value=localStorage.mc_token||'';$('#g-err').textContent=msg;}
+function setConn(ok){$('#conn').className='sq'+(ok?' on':'');$('#connt').textContent=ok?'Đã kết nối':'Mất kết nối';}
+$('#g-go').onclick=()=>{localStorage.mc_host=$('#g-host').value.trim();localStorage.mc_token=$('#g-token').value.trim();opened=false;$('#g-err').textContent='Đang kết nối…';try{ws&&ws.close();}catch(e){}clearTimeout(retry);connect();};
+
+function handle(m){
+  if(m.t==='hello'){logs=m.logs||[];ailog=m.ai||[];}
+  else if(m.t==='state'){S=m;}
+  else if(m.t==='log'){logs.push(m.e);if(logs.length>400)logs.shift();if(tab==='log')renderLog();if(tab==='ctl')renderCtlTail();return;}
+  else if(m.t==='ai'){ailog.push(m.e);if(ailog.length>60)ailog.shift();if(tab==='ai')renderAi();return;}
+  else if(m.t==='catalog'){CAT=m.items;if(tab==='ctl')renderItems();return;}
+  else if(m.t==='detail'){det=m;if(tab==='view')renderDetail();return;}
+  render();
+}
+
+// ---------- điều hướng ----------
+$('#nav').innerHTML=TABS.map(([k,l])=>`<button data-act="tab" data-k="${k}">${ICON[k]}<span>${l}</span></button>`).join('');
+function setTab(k){
+  tab=k;$$('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+k));
+  $$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+  $('#title').textContent=TABS.find(t=>t[0]===k)[2];
+  if(k==='view'){ensureSel();send({t:'select',id:selBot});det=null;}else send({t:'select',id:null});
+  if(k==='ai'){$('#ai-url').value=S.settings.aiUrl||'';$('#ai-model').value=S.settings.aiModel||'';}
+  if(k==='safe')fillSafe();
+  render();$('main').scrollTop=0;
+}
+function ensureSel(){if(!selBot||!bot(selBot)){const r=runBots()[0]||S.bots[0];selBot=r?r.id:null;}}
+function render(){
+  $('#mem').textContent=S.mem?('RAM '+S.mem+' MB'):'';
+  $('#cnt').textContent=runBots().length+'/'+S.bots.length+' bot chạy';
+  ({bots:renderBots,view:renderView,ctl:renderCtl,multi:renderMulti,log:renderLog,ai:renderAi,safe:renderSafe}[tab])();
+}
+
+// ---------- BOT ----------
+const stText=b=>b.status==='running'?(MODE[b.mode]||b.mode):b.status==='connecting'?'Đang kết nối':'Đã dừng';
+function botRow(b){
+  const off=b.status==='stopped',ar=armed[b.id]>Date.now();
+  return `<div class="bot"><i class="dot ${ST(b)}"></i><div class="grow"><div class="t">${esc(b.name)}</div><div class="dim">${stText(b)}</div></div>`+
+  (b.status==='running'?`<span class="mini">${b.hp==null?'-':b.hp} máu, ${b.food==null?'-':b.food} đói</span>`:'')+
+  `<button class="btn sm ${off?'moss':''}" data-act="${off?'start':'stop'}" data-id="${b.id}">${off?'Chạy':'Dừng'}</button>`+
+  `<button class="x ${ar?'arm':''}" data-act="delbot" data-id="${b.id}" aria-label="Xoá bot"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>`;
+}
+function renderBots(){
+  const el=$('#srvlist');
+  if(!S.servers.length){el.innerHTML='<div class="empty">Chưa có server. Bấm "Thêm server" để bắt đầu.</div>';return;}
+  el.innerHTML=S.servers.map(sv=>{
+    const bs=S.bots.filter(b=>b.serverId===sv.id),on=bs.filter(b=>b.status==='running').length,ar=armed[sv.id]>Date.now();
+    return `<div class="card"><div class="row"><div class="grow"><div class="t">${esc(sv.name)}</div><div class="dim">${esc(sv.host)}:${sv.port}${sv.version?' (bản '+esc(sv.version)+')':''}</div><div class="dim">${on} trên ${bs.length} bot đang chạy</div></div>
+    <button class="btn sm red" data-act="delsrv" data-id="${sv.id}">${ar?'Bấm lại để xoá':'Xoá'}</button></div>
+    <div class="row gap"><button class="btn sm moss" data-act="startsrv" data-id="${sv.id}">Chạy tất cả</button><button class="btn sm" data-act="stopsrv" data-id="${sv.id}">Dừng tất cả</button><button class="btn sm lapis" data-act="addbot" data-id="${sv.id}">Thêm bot</button></div>
+    ${bs.map(botRow).join('')||'<div class="dim">Chưa có bot nào trên server này.</div>'}</div>`;}).join('');
+}
+
+// ---------- Hành vi ----------
+function chips(el,list,isSel,act){
+  el.innerHTML=list.length?list.map(b=>`<button class="chip ${isSel(b)?'sel':''}" data-act="${act}" data-id="${b.id}"><i class="dot ${ST(b)}"></i>${esc(b.name)}</button>`).join(''):'<div class="dim">Chưa có bot.</div>';
+}
+function renderView(){
+  ensureSel();chips($('#vsel'),S.bots,b=>b.id===selBot,'pickview');
+  const b=bot(selBot),ok=b&&b.status==='running'&&det&&det.id===selBot;
+  $('#vinvc').hidden=!ok;$('#vmapc').hidden=!ok;
+  if(!ok){$('#vstats').innerHTML=`<div class="empty">${b?(b.status==='running'?'Đang tải dữ liệu…':'Bot này đang dừng. Bật bot ở mục BOT để xem thời gian thực.'):'Chưa có bot để xem.'}</div>`;return;}
+  renderDetail();
+}
+const hue=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return h;};
+const abbr=n=>{const w=n.split('_');return (w.length>1?w[0][0]+w[1][0]:n.slice(0,2)).toUpperCase();};
+function slot(it,sel){if(!it)return `<i class="slot${sel?' sel':''}"></i>`;return `<i class="slot${sel?' sel':''}" title="${esc(it[0])}"><b style="background:hsl(${hue(it[0])},45%,40%)">${abbr(it[0])}</b>${it[1]>1?`<u>${it[1]}</u>`:''}</i>`;}
+const bar=(v,max,col,txt)=>`<div class="bar"><i style="width:${Math.max(0,Math.min(100,v/max*100))}%;background:${col}"></i><span>${txt}</span></div>`;
+const DIM={'minecraft:overworld':'Overworld','overworld':'Overworld','minecraft:the_nether':'Nether','the_nether':'Nether','minecraft:the_end':'The End','the_end':'The End'};
+function renderDetail(){
+  const d=det;if(!d||d.id!==selBot)return;
+  if($('#vinvc').hidden){$('#vinvc').hidden=false;$('#vmapc').hidden=false;}
+  $('#vstats').innerHTML=`<div class="card">${bar(d.hp,20,'#e8473a','Máu '+d.hp+'/20')}${bar(d.food,20,'#d19a3a','Đói '+d.food+'/20')}
+  <div class="kv"><b>Tọa độ</b><span>${d.pos.join(', ')}</span><b>Chế độ</b><span>${esc(MODE[d.mode]||d.mode)}</span><b>Đang cầm</b><span>${esc(d.held||'tay không')}</span><b>Cấp XP</b><span>${d.xp}</span><b>Thế giới</b><span>${esc(DIM[d.dim]||d.dim||'-')}</span><b>Độ trễ</b><span>${d.ping==null?'-':d.ping+' ms'}</span></div></div>`;
+  const I=d.inv;let h='';
+  for(let i=5;i<=8;i++)h+=slot(I[i]);          // giáp: mũ, áo, quần, giày
+  h+='<span style="grid-column:span 4"></span>'+slot(I[45]);   // tay trái
+  h+='<span class="sep"></span>';
+  for(let i=9;i<=35;i++)h+=slot(I[i]);
+  h+='<span class="sep"></span>';
+  for(let i=36;i<=44;i++)h+=slot(I[i],i-36===d.hot);
+  $('#vinv').innerHTML=h;
+  if(d.map)drawMap(d.map,d.yaw);
+}
+const MC={w:'#3e6fd1',l:'#f06a1b',g:'#5da84a',f:'#2f7a34',t:'#7a5a34',p:'#b88a4f',s:'#dccb8a',r:'#7d8388',d:'#8a5e3c',n:'#f1f6f8',i:'#a9d8ea',o:'#d4c26a',x:'#7a2f35',b:'#2a2433',u:'#59636b','.':'#10141a'};
+const EC={p:'#52e05a',h:'#ff4040',i:'#ffd23c',m:'#ffffff'};
+function drawMap(m,yaw){
+  const cv=$('#vmap'),c=cv.getContext('2d'),n=2*m.R+1,cs=cv.width/n;
+  for(let i=0;i<m.g.length;i++){c.fillStyle=MC[m.g[i]]||MC.u;c.fillRect((i%n)*cs,Math.floor(i/n)*cs,cs+.5,cs+.5);}
+  for(const [dx,dz,k] of m.ents){c.fillStyle=EC[k];const x=(dx+m.R+.5)*cs,y=(dz+m.R+.5)*cs;c.fillRect(x-cs*.3,y-cs*.3,cs*.6,cs*.6);}
+  const cx=(m.R+.5)*cs,cy=(m.R+.5)*cs,fx=-Math.sin(yaw),fz=-Math.cos(yaw),px=-fz,pz=fx;
+  c.fillStyle='#5ad7ff';c.strokeStyle='#06222c';c.lineWidth=1.5;c.beginPath();
+  c.moveTo(cx+fx*cs*1.1,cy+fz*cs*1.1);c.lineTo(cx-fx*cs*.7+px*cs*.7,cy-fz*cs*.7+pz*cs*.7);c.lineTo(cx-fx*cs*.7-px*cs*.7,cy-fz*cs*.7-pz*cs*.7);c.closePath();c.fill();c.stroke();
+}
+
+// ---------- Điều khiển / Đa điều khiển ----------
+const PRE=[['Dừng','-stop'],['Ăn','-eat'],['Bảo vệ','-guard'],['Tắt bảo vệ','-guard off'],['Túi đồ','-inv'],['Lại đây','-come']];
+const preHtml=()=>PRE.map(([l,c])=>`<button class="btn sm" data-act="preset" data-c="${esc(c)}">${l}</button>`).join('');
+function renderCtl(){
+  if(!selCtl||!bot(selCtl)){const r=runBots()[0]||S.bots[0];selCtl=r?r.id:null;}
+  chips($('#csel'),S.bots,b=>b.id===selCtl,'pickctl');$('#cpre').innerHTML=preHtml();renderCtlTail();
+  if(!CAT&&runBots().length&&!renderCtl.asked){renderCtl.asked=1;send({t:'catalog',id:selCtl});setTimeout(()=>{renderCtl.asked=0;},5000);}
+  renderItems();
+}
+function renderItems(){
+  $('#it-n').textContent=CAT?('Có '+CAT.length+' vật phẩm. Gõ để tìm, bấm vào để chọn.'):'Chưa tải danh sách (cần 1 bot đang chạy).';
+  if(!CAT){$('#it-res').innerHTML='';return;}
+  const q=$('#it-q').value.trim().toLowerCase().replace(/\s+/g,'_');
+  const l=(q?CAT.filter(i=>i[0].includes(q)||i[1].toLowerCase().replace(/\s+/g,'_').includes(q)):CAT).slice(0,40);
+  $('#it-res').innerHTML=l.map(i=>`<button class="chip ${itSel===i[0]?'sel':''}" data-act="itpick" data-id="${esc(i[0])}"><i class="dot" style="background:hsl(${hue(i[0])},45%,45%)"></i>${esc(i[1])}</button>`).join('')||'<div class="dim">Không có vật phẩm nào khớp.</div>';
+  $('#it-pick').hidden=!itSel;if(itSel)$('#it-name').textContent=itSel;
+}
+function renderCtlTail(){
+  const l=logs.filter(e=>e.id===selCtl).slice(-8);
+  $('#ctail').innerHTML=l.length?l.map(lnHtml).join(''):'<div class="dim">Chưa có nhật ký.</div>';
+}
+function renderMulti(){
+  for(const id of [...multi])if(!bot(id))multi.delete(id);
+  chips($('#msel'),S.bots,b=>multi.has(b.id),'pickmulti');$('#mpre').innerHTML=preHtml();
+  $('#mhint').textContent='Đã chọn '+multi.size+' bot. Lệnh gửi cho các bot đang chạy trong danh sách. Gõ thường: AI xử lý; bắt đầu bằng "-": gửi thẳng.';
+}
+function sendCmd(inp,ids){
+  const v=inp.value.trim();if(!v)return;
+  ids=ids.filter(id=>{const b=bot(id);return b&&b.status==='running';});
+  if(!ids.length){toast('Chọn ít nhất 1 bot đang chạy');return;}
+  send({t:'cmd',ids,text:v});inp.value='';toast('Đã gửi cho '+ids.length+' bot');
+}
+
+// ---------- Log ----------
+const tm=ts=>new Date(ts).toLocaleTimeString('vi-VN',{hour12:false});
+const lnHtml=e=>`<div class="ln ${e.lvl}"><time>${tm(e.ts)}</time><b>${esc(e.name)}</b>${esc(e.text)}</div>`;
+function renderLog(){
+  const opts=[{id:'all',name:'Tất cả'},{id:'err',name:'Lỗi'},...S.bots];
+  $('#lsel').innerHTML=opts.map(o=>`<button class="chip ${logF===o.id?'sel':''}" data-act="logf" data-id="${o.id}">${esc(o.name)}</button>`).join('');
+  const l=logs.filter(e=>logF==='all'||(logF==='err'?e.lvl==='error':e.id===logF)).slice(-150);
+  const el=$('#loglist'),m=$('main'),atEnd=m.scrollHeight-m.scrollTop-m.clientHeight<80;
+  el.innerHTML=l.length?l.map(lnHtml).join(''):'<div class="empty">Chưa có log.</div>';
+  if(atEnd)m.scrollTop=m.scrollHeight;
+}
+
+// ---------- AI ----------
+function renderAi(){
+  const ok=S.ai&&S.ai.ok;$('#ai-dot').className='sq'+(ok?' on':'');
+  $('#ai-st').textContent=ok?'AI cục bộ đang chạy':'AI chưa chạy (đang dùng bộ phân tích dự phòng)';
+  const l=ailog.slice(-25).reverse();
+  $('#ailist').innerHTML=l.length?l.map(e=>`<div class="ai-e ${e.via==='rules'?'rules':''} ${e.error?'err':''}"><div class="dim">${tm(e.ts)} (${esc(e.bots.join(', '))}) ${e.via==='llm'?'AI':'dự phòng'}</div><div>${esc(e.text)}</div>
+  <div class="dim">${e.steps.length?esc(e.steps.map(s=>s.action+(s.target?' '+s.target:s.item?' '+s.item:'')+(s.count?' x'+s.count:'')).join('  →  ')):'không có bước nào'}</div>${e.error?`<div>${esc(e.error)}</div>`:''}</div>`).join(''):'<div class="empty">Chưa có lệnh AI nào. Gõ lệnh thường ở mục Điều khiển.</div>';
+}
+
+// ---------- An toàn ----------
+function fillSafe(){const s=S.settings||{};$('#z-stagger').value=s.staggerSec;$('#z-max').value=s.maxBots;$('#z-ram').value=s.ramLimitMB;$('#z-view').value=s.viewDistance;$('#z-eat').value=s.autoEatAt;$('#z-hp').value=s.retreatHp;}
+function renderSafe(){
+  const o=S.settings.owners||[];
+  $('#owners').innerHTML=o.length?o.map(n=>`<button class="chip" data-act="delown" data-id="${esc(n)}">${esc(n)} <span style="color:var(--red)">xoá</span></button>`).join(''):'<div class="dim">Chưa có chủ nhân nào.</div>';
+}
+
+// ---------- dừng khẩn cấp bằng vân tay ----------
+function estop(){
+  if(!window.Android||!Android.authenticate){toast('Dừng khẩn cấp cần mở bằng app APK để xác nhận vân tay');return;}
+  Android.authenticate();
+}
+window.onAuth=(ok,msg)=>{if(ok){send({t:'estop'});toast('Đã dừng toàn bộ bot');}else toast('Chưa xác nhận: '+(msg||'thất bại'));};
+
+function itCmd(a){
+  const b=bot(selCtl);if(!itSel||!b||b.status!=='running'){toast('Chọn vật phẩm và 1 bot đang chạy');return;}
+  const n=Math.max(1,parseInt($('#it-qty').value)||1);
+  send({t:'cmd',ids:[selCtl],text:'-'+a+' '+itSel+(a==='equip'?'':' '+n)});toast('Đã gửi lệnh '+a);
+}
+// ---------- hành động ----------
+const ids=l=>l.map(b=>b.id);
+const ACT={
+ tab:d=>setTab(d.k),estop,
+ showsrv:()=>{$('#f-srv').hidden=!$('#f-srv').hidden;},
+ savesrv:()=>{const h=$('#s-host').value.trim();if(!h){toast('Nhập địa chỉ server');return;}send({t:'addServer',name:$('#s-name').value.trim()||h,host:h,port:$('#s-port').value,version:$('#s-ver').value.trim()});$('#f-srv').hidden=true;$('#s-name').value=$('#s-host').value='';},
+ addbot:d=>{addSrv=d.id;const sv=S.servers.find(s=>s.id===d.id);$('#fb-title').textContent='Thêm bot vào '+(sv?sv.name:'');$('#f-bot').hidden=false;$('#b-name').focus();},
+ hidebot:()=>{$('#f-bot').hidden=true;},
+ savebot:()=>{send({t:'addBots',serverId:addSrv,name:$('#b-name').value,count:$('#b-count').value,password:$('#b-pw').value});$('#f-bot').hidden=true;$('#b-name').value=$('#b-pw').value='';$('#b-count').value='1';},
+ start:d=>send({t:'start',ids:[d.id]}),stop:d=>send({t:'stop',ids:[d.id]}),
+ startsrv:d=>send({t:'start',ids:ids(S.bots.filter(b=>b.serverId===d.id&&b.status==='stopped'))}),
+ stopsrv:d=>send({t:'stop',ids:ids(S.bots.filter(b=>b.serverId===d.id))}),
+ delbot:d=>{if(armed[d.id]>Date.now()){send({t:'delBot',id:d.id});delete armed[d.id];}else{armed[d.id]=Date.now()+3000;toast('Bấm dấu × lần nữa để xoá bot');render();setTimeout(render,3100);}},
+ delsrv:d=>{if(armed[d.id]>Date.now()){send({t:'delServer',id:d.id});delete armed[d.id];}else{armed[d.id]=Date.now()+3000;render();setTimeout(render,3100);}},
+ pickview:d=>{selBot=d.id;det=null;send({t:'select',id:selBot});render();},
+ pickctl:d=>{selCtl=d.id;render();},
+ pickmulti:d=>{multi.has(d.id)?multi.delete(d.id):multi.add(d.id);render();},
+ mall:()=>{runBots().forEach(b=>multi.add(b.id));render();},mnone:()=>{multi.clear();render();},
+ send1:()=>sendCmd($('#c1-in'),selCtl?[selCtl]:[]),send2:()=>sendCmd($('#c2-in'),[...multi]),
+ preset:d=>{const l=tab==='multi'?[...multi]:(selCtl?[selCtl]:[]);const k=l.filter(id=>{const b=bot(id);return b&&b.status==='running';});if(!k.length){toast('Chọn ít nhất 1 bot đang chạy');return;}send({t:'cmd',ids:k,text:d.c});},
+ logf:d=>{logF=d.id;renderLog();},
+ itpick:d=>{itSel=d.id;renderItems();},
+ itgive:()=>itCmd('give'),itcraft:()=>itCmd('craft'),itequip:()=>itCmd('equip'),itdrop:()=>itCmd('drop'),
+ aiping:()=>{send({t:'aiping'});toast('Đang kiểm tra AI…');},
+ saveai:()=>{send({t:'settings',patch:{aiUrl:$('#ai-url').value,aiModel:$('#ai-model').value}});toast('Đã lưu AI');setTimeout(()=>send({t:'aiping'}),300);},
+ addown:()=>{const v=$('#own-in').value.trim();if(!/^\w{3,16}$/.test(v)){toast('Tên người chơi gồm 3-16 ký tự chữ, số, _');return;}send({t:'settings',patch:{owners:[...(S.settings.owners||[]),v]}});$('#own-in').value='';},
+ delown:d=>send({t:'settings',patch:{owners:(S.settings.owners||[]).filter(n=>n!==d.id)}}),
+ savesafe:()=>{send({t:'settings',patch:{staggerSec:$('#z-stagger').value,maxBots:$('#z-max').value,ramLimitMB:$('#z-ram').value,viewDistance:$('#z-view').value,autoEatAt:$('#z-eat').value,retreatHp:$('#z-hp').value}});toast('Đã lưu cài đặt');}
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(b&&ACT[b.dataset.act])ACT[b.dataset.act](b.dataset);});
+$('#c1-in').addEventListener('keydown',e=>{if(e.key==='Enter')ACT.send1();});
+$('#c2-in').addEventListener('keydown',e=>{if(e.key==='Enter')ACT.send2();});
+$('#it-q').addEventListener('input',renderItems);
+$('#own-in').addEventListener('keydown',e=>{if(e.key==='Enter')ACT.addown();});
+
+setTab('bots');connect();
+})();
+</script></body></html>

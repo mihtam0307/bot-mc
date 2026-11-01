@@ -1,0 +1,16 @@
+{
+  "name": "mc-bot-swarm",
+  "version": "1.0.0",
+  "description": "Bầy bot Minecraft toàn năng chạy trên Termux (mineflayer)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --expose-gc --max-old-space-size=512 index.js"
+  },
+  "dependencies": {
+    "mineflayer": "^4.23.0",
+    "mineflayer-pathfinder": "^2.4.5",
+    "prismarine-item": "^1.15.0",
+    "vec3": "^0.1.10",
+    "ws": "^8.18.0"
+  }
+}
